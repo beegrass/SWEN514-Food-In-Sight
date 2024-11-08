@@ -14,7 +14,7 @@ def detect_food(bucket, photo):
         response = rekognition.detect_labels(
             Image={'S3Object': {'Bucket': bucket, 'Name': photo}},
             MaxLabels=5,
-            MinConfidence=90
+            MinConfidence=80
         )
         ''' For custom model
         #response = rekognition.detect_custom_labels(
@@ -114,7 +114,7 @@ def lambda_handler(event, context):
         
         # Detect food in the image
         response = detect_food(bucket, key)
-        
+        ''''''
         if response:
             # Annotate the image with labels
             labeled_image = display_image(bucket, key, response)
@@ -125,7 +125,7 @@ def lambda_handler(event, context):
                 # Upload labeled image and labels to S3
                 output_image_key, labels_key = upload_results_to_s3(results_bucket, key, labeled_image, 
                                                                      [label['Name'] for label in response.get('Labels', [])])
-                
+                p
                 print(f"Labeled image uploaded to: {output_image_key}")
                 print(f"Labels uploaded to: {labels_key}")
             else:
