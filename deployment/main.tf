@@ -6,6 +6,39 @@ locals {
   aws_key = "AWS_KEY"
 }
 
+# Install dependencies for the Lambda layer
+resource "null_resource" "install_layer_dependencies" {
+  provisioner "local-exec" {
+    command = "pip install -r ../src/requirements.txt -t layer/python/lib/python3.11/site-packages"
+  }
+  triggers = {
+    trigger = timestamp()
+  }
+}
+
+# Package the Lambda layer dependencies into a zip file
+data "archive_file" "layer_zip" {
+  type        = "zip"
+  source_dir  = "layer"
+  output_path = "zipped/layer.zip"
+  depends_on = [null_resource.install_layer_dependencies]
+}
+
+# Create Lambda layer with dependencies
+resource "aws_lambda_layer_version" "rek_layer" {
+  filename           = "zipped/layer.zip"
+  source_code_hash   = data.archive_file.layer_zip.output_base64sha256
+  layer_name         = "reckon_layer_dependencies"
+  compatible_runtimes = ["python3.11"]
+}
+
+# Package the Lambda function code
+data "archive_file" "identfy_function_zip" {
+  type        = "zip"
+  source_file = "../src/identfy_function.py"
+  output_path = "zipped/identfy_function.zip"
+}
+
 # S3 Bucket for Images
 resource "aws_s3_bucket" "image_bucket" {
   bucket = "new-foods-tub"
@@ -38,10 +71,9 @@ resource "aws_iam_policy" "lambda_exec_policy" {
   name        = "lambda_exec_policy"
   description = "Policy for Lambda execution with S3 and Rekognition access"
   policy      = jsonencode({
+    Version = "2012-10-17",
     Statement = [
       {
-
-        Version = "2012-10-17",
         Action = [
           "logs:CreateLogGroup",
           "logs:CreateLogStream",
@@ -53,18 +85,16 @@ resource "aws_iam_policy" "lambda_exec_policy" {
       {
         Action = [
           "s3:GetObject",
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:ListBucket"  # Added ListBucket permission for both buckets
         ],
         Effect   = "Allow",
-        Resource = "arn:aws:s3:::${aws_s3_bucket.image_bucket.bucket}/*"
-      },
-      {
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        Effect   = "Allow",
-        Resource = "arn:aws:s3:::${aws_s3_bucket.results_bucket.bucket}/*"
+        Resource = [
+          "arn:aws:s3:::${aws_s3_bucket.image_bucket.bucket}",
+          "arn:aws:s3:::${aws_s3_bucket.image_bucket.bucket}/*",
+          "arn:aws:s3:::${aws_s3_bucket.results_bucket.bucket}",
+          "arn:aws:s3:::${aws_s3_bucket.results_bucket.bucket}/*"
+        ]
       },
       {
         Action = [
@@ -72,14 +102,6 @@ resource "aws_iam_policy" "lambda_exec_policy" {
         ],
         Effect   = "Allow",
         Resource = "*"
-      },
-      {
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ],
-        Effect   = "Allow",
-        Resource = "arn:aws:s3:::my-lambda-code6/*"
       }
     ]
   })
@@ -93,15 +115,15 @@ resource "aws_iam_role_policy_attachment" "lambda_exec_role_attach" {
 
 # Lambda Function Resource with S3 Code Reference
 resource "aws_lambda_function" "detect_food_lambda" {
-  function_name    = "detect_food_lambda"
-  s3_bucket        = "my-lambda-code6"
-  s3_key           = "identfy_function.zip"
-  role             = aws_iam_role.lambda_exec_role.arn
-  handler          = "identfy_function.lambda_handler"
-  runtime          = "python3.9"
-
-  memory_size = 128
-  timeout     = 30
+  function_name = "detect_food_lambda"
+  filename      = data.archive_file.identfy_function_zip.output_path  # Specify the zipped function code
+  role          = aws_iam_role.lambda_exec_role.arn
+  handler       = "identfy_function.lambda_handler"
+  runtime       = "python3.11"  # Ensure runtime matches the layer
+  memory_size   = 128
+  timeout       = 60
+  layers        = [aws_lambda_layer_version.rek_layer.arn]
+  depends_on    = [aws_lambda_layer_version.rek_layer]
 }
 
 # S3 Trigger for Lambda
@@ -113,7 +135,7 @@ resource "aws_s3_bucket_notification" "bucket_notification" {
     events              = ["s3:ObjectCreated:*"]
   }
 
-  depends_on = [aws_lambda_function.detect_food_lambda]  # Ensures the Lambda function is created before setting notification
+  depends_on = [aws_lambda_function.detect_food_lambda, aws_lambda_permission.allow_s3_invoke]
 }
 
 # Lambda Permission for S3 Invocation

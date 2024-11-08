@@ -21,12 +21,14 @@ def detect_food(bucket, photo):
 
 def upload_results_to_s3(bucket, key, labels):
     try:
-        # Create a text file with the labels
-        labels_content = "\n".join(labels)
+        # Create a formatted text file with labels and confidence scores (comma-separated)
+        labels_content = "\n".join(f"{label['Name']},{label['Confidence']:.2f}" for label in labels)
         labels_buffer = io.BytesIO(labels_content.encode('utf-8'))
 
+        # Define the key for the uploaded file
+        labels_key = f'labeled/labels_{key.split("/")[-1].replace(".jpg", ".txt")}'
+        
         # Upload the labels text file to S3
-        labels_key = f'labeled/labels_{key.split("/")[-1].replace(".jpg", ".txt")}'  # Create a .txt file with the same base name
         s3_client.put_object(
             Bucket=bucket,
             Key=labels_key,
@@ -45,15 +47,17 @@ def lambda_handler(event, context):
         bucket = event['Records'][0]['s3']['bucket']['name']
         key = urllib.parse.unquote_plus(event['Records'][0]['s3']['object']['key'], encoding='utf-8')
         
-        # Detect food in the image
+        # Detect labels in the image
         response = detect_food(bucket, key)
         
         if response:
-            # Upload labels to S3
+            # Extract label names and confidence scores
+            labels = response.get('Labels', [])
+            
+            # Upload formatted labels to S3
             results_bucket = "new-foods-tub-results"
-            labels_key = upload_results_to_s3(results_bucket, key, 
-                                                [label['Name'] for label in response.get('Labels', [])])
-                
+            labels_key = upload_results_to_s3(results_bucket, key, labels)
+            
             print(f"Labels uploaded to: {labels_key}")
         else:
             print("No response received from detect_food.")
