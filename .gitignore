@@ -1,1 +1,6 @@
-nodemodules/
+deployment/.terraform/
+deployment/layer/
+deployment/.terraform.lock.hcl
+deployment/zipped
+deployment/terraform.tfstate
+deployment/terraform.tfstate.backup
