@@ -34,11 +34,13 @@ data "archive_file" "identfy_function_zip" {
 # S3 Bucket for Images
 resource "aws_s3_bucket" "image_bucket" {
   bucket = "new-foods-tub"
+  force_destroy = true
 }
 
 # S3 Bucket for Results
 resource "aws_s3_bucket" "results_bucket" {
   bucket = "new-foods-tub-results"
+  force_destroy = true
 }
 
 # IAM Role for Lambda Function
