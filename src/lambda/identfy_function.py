@@ -6,13 +6,15 @@ import io
 
 rekognition = boto3.client('rekognition')
 s3_client = boto3.client('s3')
+model_arm = "arn:aws:rekognition:us-east-1:559050203586:project/FoodInSight/version/FoodInSight.2024-11-11T12.31.51/1731346311117"
 
 def detect_food(bucket, photo):
     try:
-        response = rekognition.detect_labels(
+        response = rekognition.detect_custom_labels(
             Image={'S3Object': {'Bucket': bucket, 'Name': photo}},
-            MaxLabels=5,
-            MinConfidence=90
+            MaxResults=3,
+            MinConfidence=90,
+            ProjectVersionArn=model_arm
         )
         return response
     except Exception as e:
