@@ -14,6 +14,11 @@ const LandingPage= () => {
                     <input type="file" accept="image/*"/>
                     <button className="upload-button">Upload</button>
                 </section>
+                <section>
+                    <h2>Add your allergens!</h2>
+                    <input type="text" placeholder="Type your alergen here"/>
+                    <button className="search-button">Upload Allergen</button>
+                </section>
                 <section className="search-section">
                     <h2>Search Ingredients</h2>
                     <input type="text" placeholder="Search for ingredients..."/>
