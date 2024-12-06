@@ -86,7 +86,7 @@ const LandingPage= () => {
         setLoading(true);
         const apiUrl = `${VITE_API_GATEWAY_URL}/uploadimage`;
 
-        const preSignedUrl = await getPresignedUrl(endpoint, ImageUploadFile.name);
+        const preSignedUrl = await getPresignedUrl(endpoint, ImageUploadFile.name, ImageUploadFile.type);
 
         console.log(preSignedUrl)
 
@@ -133,7 +133,11 @@ const LandingPage= () => {
                 <form className="upload-section">
                     <h2>Upload Food Images</h2>
                     <input
-                        onChange={(e) => setImageUploadFile(e.target.files?.[0] || null)}
+                        onChange={(e) => 
+                            {
+                                console.log(e.target.files?.[0].type)
+                                setImageUploadFile(e.target.files?.[0] || null)
+                            }}
                         type="file"
                         accept="image/*"
                     />

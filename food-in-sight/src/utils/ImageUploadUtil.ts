@@ -10,7 +10,7 @@ export const imageUpload = async (imageFile: any, presignedUrl: URL) => {
             method: 'PUT',
             body: imageFile,
             headers: {
-                'Content-Type': 'image/png', //Needed to manually set this to match the content type when creating the presigned url
+                'Content-Type': `${imageFile.type}`, //Needed to manually set this to match the content type when creating the presigned url
             },
         });
 
@@ -32,15 +32,18 @@ export const imageUpload = async (imageFile: any, presignedUrl: URL) => {
  * @param endpoint The endpoint which will be appended to the base API URI
  * @param filename The name of the file you will be uploading using the signed url
  */
-export const getPresignedUrl =  async (endpoint: string, filename: string) => {
+export const getPresignedUrl =  async (endpoint: string, filename: string, contentType: string = '') => {
     const baseURI = import.meta.env.VITE_API_GATEWAY_URL
     const uri = baseURI + endpoint;
     console.log(`uri: ${uri}`)
     try {
         const response = await fetch(uri, {
             method: 'post',
-            body: JSON.stringify({
-                "fileName": filename
+            body: contentType !== '' ? JSON.stringify({
+                "fileName": filename,
+                "contentType": contentType
+            }) : JSON.stringify({
+                "fileName": filename,
             }),
             headers: {
                 'Content-Type': 'application/json',
