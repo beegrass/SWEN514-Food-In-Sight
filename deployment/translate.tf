@@ -152,7 +152,7 @@ resource "aws_lambda_function" "generate_translate_presigned_url" {
 }
 
 
-output "s3_bucket_name" {
+output "translate_s3_bucket_name" {
   value = aws_s3_bucket.file_upload_bucket.bucket
 }
 
