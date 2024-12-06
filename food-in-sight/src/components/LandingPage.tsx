@@ -122,6 +122,7 @@ const LandingPage= () => {
         // } finally {
         //     setLoading(false)
         // }
+        setLoading(false)
     }
 
     return (

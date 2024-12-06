@@ -10,7 +10,7 @@ export const imageUpload = async (imageFile: any, presignedUrl: URL) => {
             method: 'PUT',
             body: imageFile,
             headers: {
-                'Content-Type': 'image/*', //Needed to manually set this to match the content type when creating the presigned url
+                'Content-Type': 'image/png', //Needed to manually set this to match the content type when creating the presigned url
             },
         });
 
