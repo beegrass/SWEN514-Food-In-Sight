@@ -28,7 +28,7 @@ resource "aws_s3_bucket_cors_configuration" "image_bucket_cors_policy" {
 }
 
 
-resource "aws_s3_bucket_policy" "file_upload_bucket_policy" {
+resource "aws_s3_bucket_policy" "image_bucket_policy" {
   bucket = aws_s3_bucket.image_bucket.id
 
   policy = jsonencode({
