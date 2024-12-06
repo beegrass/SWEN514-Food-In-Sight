@@ -16,9 +16,9 @@ export const imageUpload = async (imageFile: any, presignedUrl: URL) => {
 
         if (response.ok) {
             console.log('Upload successful!');
-            return true;
+            return response;
         } else {
-            console.error('Upload failed:', response.statusText);
+            console.error('Upload failed:', response.json());
             return false;
         }
     } catch (error) {
@@ -52,6 +52,7 @@ export const getPresignedUrl =  async (endpoint: string, filename: string, conte
 
         const data = await response.json(); // Assuming the URL is returned in a JSON object
         console.log("presigned from the func: ", data['url']);
+        console.log('image_s3_url: ', data['image_url']);
         return data['url'];
     } catch (error) {
         console.error('Error getting pre-signed URL:', error);

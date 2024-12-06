@@ -43,6 +43,32 @@ const LandingPage= () => {
         }
     }
 
+    async function triggerMainBackendFunction(fileKey: string) {
+        try {
+            const response = await fetch(`${VITE_API_GATEWAY_URL}/uploadimage`, { //technically 'uploadimage' isnt a good name anymore since presigned URLs
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "file_key": fileKey
+                }),
+            })
+
+            if (!response.ok) {
+                console.log("Failed to finish image analysis: ", response.statusText);
+            }
+
+            const data: ExpectedResultStructure = await response.json();
+            navigate('/results', { state: { data: data } });
+
+            return await response.json();
+
+        } catch (error) {
+            console.error('Error sending fileKey:', error);
+        }
+    }
+
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -94,34 +120,16 @@ const LandingPage= () => {
 
         console.log(success)
 
-        // if(!success) {
-        //     alert("Image upload failed, please try again")
-        //     return
-        // } else {
-        //     const result = await sendFileKeyToTranslateEndpoint(ImageUploadFile.name);
-        //     setLoading(false);
-        //     console.log(result)
-        // }
+        if(!success) {
+            alert("Image upload failed, please try again")
+            return
+        } else {
+            const result = await triggerMainBackendFunction(`${success}${ImageUploadFile.name}`);
+            setLoading(false);
+            console.log(result)
+        }
 
-        // try{
-
-        //     const response = await fetch(apiUrl, {
-        //         method: "POST",
-        //         headers: {
-        //             "Content-Type": "application/json",
-        //         },
-        //         body: JSON.stringify({
-        //             image_data: image_data,
-        //         }),
-        //     })
-        //     const data: ExpectedResultStructure = await response.json();
-        //     navigate('/results', { state: { data: data } });
-            
-        // } catch (error) {
-        //     console.error(`Error uploading image: ${error}`)
-        // } finally {
-        //     setLoading(false)
-        // }
+       
         setLoading(false)
     }
 
@@ -135,7 +143,6 @@ const LandingPage= () => {
                     <input
                         onChange={(e) => 
                             {
-                                console.log(e.target.files?.[0].type)
                                 setImageUploadFile(e.target.files?.[0] || null)
                             }}
                         type="file"
