@@ -634,5 +634,5 @@ resource "aws_api_gateway_integration_response" "upload_image_presign_URL_option
 
 
 output "api_url" {
-  value = "${aws_api_gateway_deployment.deployment.invoke_url}/upload"
+  value = "${aws_api_gateway_deployment.deployment.invoke_url}"
 }
