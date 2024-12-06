@@ -18,6 +18,7 @@ const LandingPage= () => {
     const navigate = useNavigate()
 
     const [translateFile, setTranslateFile] = useState<File | null>(null);
+    const [ImageUploadFile, setImageUploadFile] = useState<File | null>(null);
 
     async function sendFileKeyToTranslateEndpoint(fileKey: string) {
         try {
@@ -77,28 +78,50 @@ const LandingPage= () => {
 
     const Submit2 = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!ImageUploadFile) {
+            alert("Please upload a file first!");
+            return;
+        }
+        const endpoint = "/presign-main-upload";
         setLoading(true);
         const apiUrl = `${VITE_API_GATEWAY_URL}/uploadimage`;
 
-        try{
+        const preSignedUrl = await getPresignedUrl(endpoint, ImageUploadFile.name);
 
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    image_data: image_data,
-                }),
-            })
-            const data: ExpectedResultStructure = await response.json();
-            navigate('/results', { state: { data: data } });
+        console.log(preSignedUrl)
+
+        const success = await imageUpload(ImageUploadFile, preSignedUrl);
+
+        console.log(success)
+
+        // if(!success) {
+        //     alert("Image upload failed, please try again")
+        //     return
+        // } else {
+        //     const result = await sendFileKeyToTranslateEndpoint(ImageUploadFile.name);
+        //     setLoading(false);
+        //     console.log(result)
+        // }
+
+        // try{
+
+        //     const response = await fetch(apiUrl, {
+        //         method: "POST",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //         },
+        //         body: JSON.stringify({
+        //             image_data: image_data,
+        //         }),
+        //     })
+        //     const data: ExpectedResultStructure = await response.json();
+        //     navigate('/results', { state: { data: data } });
             
-        } catch (error) {
-            console.error(`Error uploading image: ${error}`)
-        } finally {
-            setLoading(false)
-        }
+        // } catch (error) {
+        //     console.error(`Error uploading image: ${error}`)
+        // } finally {
+        //     setLoading(false)
+        // }
     }
 
     return (
@@ -109,6 +132,7 @@ const LandingPage= () => {
                 <form className="upload-section">
                     <h2>Upload Food Images</h2>
                     <input
+                        onChange={(e) => setImageUploadFile(e.target.files?.[0] || null)}
                         type="file"
                         accept="image/*"
                     />
