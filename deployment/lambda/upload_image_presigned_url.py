@@ -13,6 +13,8 @@ def handler(event, context):
     contentType = body['contentType']
     expiration = body.get('expiration', 60)  # Default expiration is 60 seconds
 
+    image_url = "s3://"+str(bucket_name) + '/'+ str(file_name)
+
     s3_client = boto3.client('s3')
 
     # Generate the pre-signed URL
@@ -29,7 +31,7 @@ def handler(event, context):
                 "Access-Control-Allow-Origin": "*",
                 "Access-Control-Allow-Methods": "POST, PUT",
             },
-            'body': json.dumps({'url': url})
+            'body': json.dumps({'url': url, 'image_url': image_url})
         }
     except ClientError as e:
         return {
