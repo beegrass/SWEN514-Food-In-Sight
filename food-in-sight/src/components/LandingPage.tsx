@@ -66,7 +66,7 @@ const LandingPage= () => {
             return await response.json();
 
         } catch (error) {
-            console.error('Error sending fileKey:', error);
+            console.error('Error sending image_url: ', error);
         }
     }
 
