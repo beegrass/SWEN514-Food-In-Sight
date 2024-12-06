@@ -13,7 +13,13 @@ const ResultsPage = () => {
             <h2>Message:</h2>
             <p>{data.message}</p>
             <br/>
-            <h2>Result:</h2>
+            <p>--------------------------------------</p>
+            <h2>Diet Conflicts:</h2>
+            <h3>Apple - apple-allergy</h3>
+            <br/>
+            <p>--------------------------------------</p>
+
+            <h2>Raw Result:</h2>
             <p>{data.result}</p>
 
         </div>
