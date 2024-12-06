@@ -43,7 +43,7 @@ const LandingPage= () => {
         }
     }
 
-    async function triggerMainBackendFunction(fileKey: string) {
+    async function triggerMainBackendFunction(image_url: string) {
         try {
             const response = await fetch(`${VITE_API_GATEWAY_URL}/uploadimage`, { //technically 'uploadimage' isnt a good name anymore since presigned URLs
                 method: "POST",
@@ -51,7 +51,8 @@ const LandingPage= () => {
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    "file_key": fileKey
+                    "image_url": image_url,
+                    "username": ''
                 }),
             })
 
@@ -112,11 +113,11 @@ const LandingPage= () => {
         setLoading(true);
         const apiUrl = `${VITE_API_GATEWAY_URL}/uploadimage`;
 
-        const preSignedUrl = await getPresignedUrl(endpoint, ImageUploadFile.name, ImageUploadFile.type);
+        const data = await getPresignedUrl(endpoint, ImageUploadFile.name, ImageUploadFile.type);
 
-        console.log(preSignedUrl)
+        console.log(data)
 
-        const success = await imageUpload(ImageUploadFile, preSignedUrl);
+        const success = await imageUpload(ImageUploadFile, data['url']);
 
         console.log(success)
 
@@ -124,7 +125,7 @@ const LandingPage= () => {
             alert("Image upload failed, please try again")
             return
         } else {
-            const result = await triggerMainBackendFunction(`${success}${ImageUploadFile.name}`);
+            const result = await triggerMainBackendFunction(data['image_url']);
             setLoading(false);
             console.log(result)
         }

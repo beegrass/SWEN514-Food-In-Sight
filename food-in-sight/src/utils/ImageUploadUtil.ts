@@ -53,7 +53,7 @@ export const getPresignedUrl =  async (endpoint: string, filename: string, conte
         const data = await response.json(); // Assuming the URL is returned in a JSON object
         console.log("presigned from the func: ", data['url']);
         console.log('image_s3_url: ', data['image_url']);
-        return data['url'];
+        return data;
     } catch (error) {
         console.error('Error getting pre-signed URL:', error);
     }
