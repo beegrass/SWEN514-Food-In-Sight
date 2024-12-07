@@ -61,8 +61,16 @@ else
   aws configure
 fi
 
+info "Creating Amplify Project"
+if amplify status > /dev/null 2>&1; then
+  success "Amplify project already initialized. Skipping 'amplify init'."
+else
+  echo -e "${YELLOW}Initializing Amplify project...${RESET}"
+  amplify init --app $AMPLIFY_APP_NAME --env $AMPLIFY_ENV_NAME --yes || { error "Amplify initialization failed. Exiting."; exit 1; }
+  success "Amplify project initialized successfully."
+fi
 
-info "Initializing Amplify Project..."
+info "Populating Amplify Project..."
 echo "${REPO_URL}"
 echo "${AMPLIFY_BRANCH_NAME}"
 if amplify hosting add \
