@@ -63,22 +63,21 @@ fi
 
 
 info "Initializing Amplify Project..."
-amplify init \
-  --yes \
-  --amplify "{\"projectName\":\"food-in-sight\",\"envName\":\"prod\"}" \
-  --frontend "{\"frontend\":\"javascript\",\"framework\":\"react\",\"config\":{\"SourceDir\":\"src\",\"DistributionDir\":\"build\",\"BuildCommand\":\"npm run build\",\"StartCommand\":\"npm start\"}}" \
-  --providers "{\"awscloudformation\":{\"configLevel\":\"project\",\"useProfile\":true,\"profileName\":\"default\",\"region\":\"us-east-1\"}}"
-
-success "Amplify Project Created Successfully"
-
-info "Connected Amplify project to github"
 if amplify hosting add \
   --platform WEB \
   --framework react \
-  --gitHubUrl $REPO_URL \
-  --branch AMPLIFY_BRANCH_NAME \
-  --enable-auto-build; then
+  --gitHubUrl "$REPO_URL" \
+  --branch "$AMPLIFY_BRANCH_NAME" \
+  --enable-auto-build \
+  --yes; then
     success "Amplify connected to GitHub successfully."
+else
+    echo -e "${RED}[ERROR] ${RESET}Failed to connect Amplify to GitHub."
+    exit 1
+fi
+
+info "Connected Amplify project to github"
+c
 else
     error "Failed to connect Amplify project to GitHub. Exiting."
     exit 1
