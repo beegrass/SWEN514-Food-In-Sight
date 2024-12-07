@@ -2,7 +2,6 @@ import './LandingPage.css';
 import { FaCloudUploadAlt } from "react-icons/fa";
 import {useState} from "react";
 import {getPresignedUrl, imageUpload} from "../utils/ImageUploadUtil.ts";
-import {image_data} from "../assets/image_data.tsx"
 import { useNavigate } from 'react-router-dom';
 import { ExpectedResultStructure } from '../utils/Types.tsx';
 import { BeatLoader } from "react-spinners"; // Import spinner
@@ -111,7 +110,6 @@ const LandingPage= () => {
         }
         const endpoint = "/presign-main-upload";
         setLoading(true);
-        const apiUrl = `${VITE_API_GATEWAY_URL}/uploadimage`;
 
         const data = await getPresignedUrl(endpoint, ImageUploadFile.name, ImageUploadFile.type);
 
