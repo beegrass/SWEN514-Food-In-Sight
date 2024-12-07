@@ -1,5 +1,5 @@
 locals {
-  amplify_branch_url = "https://${var.branch_name}.d1c2naelj7l2nf.amplifyapp.com/"
+  amplify_branch_url = "https://${var.branch_name}.${var.amplify_id}.amplifyapp.com/"
   food_api_invoke_url = "https://${aws_api_gateway_rest_api.Food-In-Sight-API.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/prod"
   user_api_invoke_url = "https://${aws_api_gateway_rest_api.food_api.id}.execute-api.${data.aws_region.current.name}.amazonaws.com/prod/"
 }
@@ -43,7 +43,7 @@ resource "aws_cognito_identity_pool" "food-in-sight-identity-pool" {
 }
 
 resource "aws_amplify_branch" "main" {
-  app_id            = "d1c2naelj7l2nf" # Manually setting the app_id to match the existing deployed amplify app
+  app_id            = var.amplify_id # Manually setting the app_id to match the existing deployed amplify app
   branch_name       = var.branch_name
   enable_auto_build = true
 

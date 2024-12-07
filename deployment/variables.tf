@@ -14,3 +14,9 @@ variable "branch_name" {
   description = "This is used to configure the front-end build to work with other branches"
   default = "main"
 }
+
+variable "amplify_id" {
+  type = string
+  description = "This is the amplify ID used to work on the project"
+  default = "d1c2naelj7l2nf"
+}

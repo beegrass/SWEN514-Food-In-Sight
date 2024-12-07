@@ -1,9 +1,11 @@
 #!/bin/bash
 
 # Set project and branch to build
-AMPLIFY_APP_ID="d1c2naelj7l2nf"
-AMPLIFY_BRANCH_NAME="main"
+REPO_URL = "https://github.com/SWEN-514-FALL-2024/term-project-2241-swen-514-05-team5"
+AMPLIFY_BRANCH_NAME="self-creating-amplify"
 TERRAFORM_RESOURCE="aws_amplify_branch.main"
+
+
 
 # Colors for aesthetics
 RESET="\033[0m"
@@ -56,21 +58,46 @@ if [ -d ".terraform" ] && [ -f ".terraform.lock.hcl" ]; then
   echo -e "${GREEN}Terraform is already initialized. Skipping 'terraform init'.${NC}"
 else
   echo -e "${YELLOW}Running terraform init...${NC}"
-  terraform init || { echo -e "${RED}Error: terraform init failed! Exiting.${NC}"; exit 1; }
+  terraform init || {error "Error: terraform init failed! Exiting.${NC}"; exit 1; }
 fi
 
+
+info "Initializing Amplify Project..."
+amplify init \
+  --yes \
+  --amplify "{\"projectName\":\"food-in-sight\",\"envName\":\"prod\"}" \
+  --frontend "{\"frontend\":\"javascript\",\"framework\":\"react\",\"config\":{\"SourceDir\":\"src\",\"DistributionDir\":\"build\",\"BuildCommand\":\"npm run build\",\"StartCommand\":\"npm start\"}}" \
+  --providers "{\"awscloudformation\":{\"configLevel\":\"project\",\"useProfile\":true,\"profileName\":\"default\",\"region\":\"us-east-1\"}}"
+
+success "Amplify Project Created Successfully"
+
+info "Connected Amplify project to github"
+if amplify hosting add \
+  --platform WEB \
+  --framework react \
+  --gitHubUrl $REPO_URL \
+  --branch AMPLIFY_BRANCH_NAME \
+  --enable-auto-build; then
+    success "Amplify connected to GitHub successfully."
+else
+    error "Failed to connect Amplify project to GitHub. Exiting."
+    exit 1
+fi
+
+AMPLIFY_APP_ID=$(aws amplify list-apps --query "apps[?name=='food-in-sight'].appId | [0]" --output text)
 
 # Setup terraform variables if they dont exist
 if [[ ! -f terraform.tfvars ]]; then
     echo -e "${YELLOW}terraform.tfvars file not found.${NC}"
     read -p "Please provide your AWS keypair name (aws_key): " userAwsKey
     if [[ -z "$userAwsKey" ]]; then
-        echo -e "${RED}AWS Key is required to proceed. Exiting.${NC}"
+        error "AWS Key is required to proceed. Exiting.${NC}"
         exit 1
     fi
     echo -e "${GREEN}Creating terraform.tfvars file with provided AWS Key and default region...${NC}"
     echo "aws_key=\"$userAwsKey\"" > terraform.tfvars
     echo "region=\"us-east-1\"" >> terraform.tfvars
+    echo "amplify_id=\"$AMPLIFY_APP_ID\"" >> terraform.tfvars
     echo -e "${GREEN}terraform.tfvars file created successfully.${NC}"
 else
     echo -e "${GREEN}terraform.tfvars already exists. Skipping creation.${NC}"
