@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set project and branch to build
-REPO_URL = "https://github.com/SWEN-514-FALL-2024/term-project-2241-swen-514-05-team5"
+REPO_URLcd ="https://github.com/SWEN-514-FALL-2024/term-project-2241-swen-514-05-team5"
 AMPLIFY_BRANCH_NAME="self-creating-amplify"
 TERRAFORM_RESOURCE="aws_amplify_branch.main"
 
@@ -47,10 +47,10 @@ cd "deployment"
 # First check if AWS CLI is already configured and if not then prompt
 # -> we do this by checking to see a default profile exists in ~/.aws/
 echo -e "${BLUE}Checking AWS configuration...${NC}"
-if aws configure list > /dev/null 2>&1; then
-  echo -e "${GREEN}AWS CLI is already configured. Skipping AWS configuration.${NC}"
+if aws sts get-caller-identity > /dev/null 2>&1; then
+  echo -e "${GREEN}AWS CLI is already configured and working.${NC}"
 else
-  echo -e "${YELLOW}AWS CLI is not configured. Running 'aws configure'...${NC}"
+  echo -e "${YELLOW}AWS CLI is not fully configured. Running 'aws configure'...${NC}"
   aws configure
 fi
 
