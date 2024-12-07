@@ -1,49 +1,37 @@
-import os
 import boto3
-from botocore.exceptions import ClientError
+import os
+import logging
 
-# Initialize DynamoDB client
+# Configure logging
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# DynamoDB client
 dynamodb = boto3.resource('dynamodb')
-table_name = os.getenv("DYNAMODB_TABLE")
+user_table_name = os.environ['DYNAMODB_TABLE']
+user_table = dynamodb.Table(user_table_name)
 
 def lambda_handler(event, context):
     """
-    Lambda function to handle post-user-creation events.
-    Inserts the new user's username into the DynamoDB table only if it doesn't already exist.
+    Post Confirmation Lambda Trigger.
+    Adds a new user's UserName to the DynamoDB table upon confirmation.
     """
     try:
-        # Get the DynamoDB table
-        table = dynamodb.Table(table_name)
+        logger.info(f"Post Confirmation Event: {event}")
 
-        # Extract the username from the Cognito event
-        username = event['userName']
+        # Extract UserName from the event
+        user_name = event['userName']
 
-        # Check if the username already exists
-        response = table.get_item(
-            Key={
-                'UserName': username
+        # Add the user to DynamoDB
+        user_table.put_item(
+            Item={
+                'UserName': user_name
             }
         )
 
-        if 'Item' in response:
-            # Username already exists, do nothing
-            print(f"Username '{username}' already exists in the table.")
-        else:
-            # Insert the username into the DynamoDB table
-            table.put_item(
-                Item={
-                    'UserName': username
-                }
-            )
-            print(f"Successfully added user: {username}")
+        logger.info(f"Successfully added user {user_name} to table {user_table_name}")
+        return event  # Must return the event for Cognito to continue processing
 
-        return event  # Returning event is required for Cognito triggers
-    except KeyError as e:
-        print(f"KeyError: Missing required key in the event: {e}")
-        raise
-    except ClientError as e:
-        print(f"ClientError: {e.response['Error']['Message']}")
-        raise
     except Exception as e:
-        print(f"Unexpected error: {e}")
+        logger.error(f"Error adding user to DynamoDB: {e}")
         raise
