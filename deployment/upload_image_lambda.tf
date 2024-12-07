@@ -91,7 +91,10 @@ resource "aws_iam_role_policy" "upload_image_lambda_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Action   = "s3:PutObject"
+        Action   = [
+          "s3:PutObject",
+          "s3:GetObject"
+        ]
         Effect   = "Allow"
         Resource = "${aws_s3_bucket.image_bucket.arn}/*"
       },
@@ -108,3 +111,29 @@ resource "aws_iam_role_policy" "upload_image_lambda_policy" {
     ]
   })
 }
+
+
+
+#presigned URL -------------------------------------------
+data "archive_file" "upload_image_lambda_presign_zip" {
+  type        = "zip"
+  source_file = "${path.module}/lambda/upload_image_presigned_url.py"
+  output_path = "${path.module}/lambda/upload_image_presigned_url.zip"
+}
+
+resource "aws_lambda_function" "get_image_upload_presigned_url" {
+  function_name = "PresignedURLUploadImageLambdaFunction" #Using pre-existing role
+  role          = aws_iam_role.upload_image_lambda_exec_role.arn
+  handler       = "upload_image_presigned_url.handler"
+  runtime       = "python3.11"
+  filename      = "lambda/upload_image_presigned_url.zip"
+
+  environment {
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.image_bucket.bucket
+    }
+  }
+
+  source_code_hash = data.archive_file.upload_image_lambda_presign_zip.output_base64sha256
+}
+#END presigned URL -------------------------------------------

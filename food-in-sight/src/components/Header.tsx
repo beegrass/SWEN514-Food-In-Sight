@@ -1,7 +1,7 @@
 import {useNavigate} from "react-router-dom";
 import "./Header.css";
 import { useAuthenticator } from '@aws-amplify/ui-react';
-import { FaHome, FaUser  } from "react-icons/fa";
+import { FaHome, FaUser, FaCamera } from "react-icons/fa";
 
 
 const Header = () => {
@@ -17,6 +17,10 @@ const Header = () => {
         navigate('/');
     }
 
+    const handleCameraRedir = () => {
+        navigate('/camera');
+    }
+
     return (
         <header>
             <nav className="nav-menu">
@@ -25,6 +29,9 @@ const Header = () => {
                 </button>
                 <button onClick={handleProfileRedir} className="nav-button">
                     <FaUser className="nav-icon"/>
+                </button>
+                <button onClick={handleCameraRedir} className="nav-button">
+                    <FaCamera className="nav-icon"/>
                 </button>
 
                 <p className="welcome-text">Welcome {user.username}</p>

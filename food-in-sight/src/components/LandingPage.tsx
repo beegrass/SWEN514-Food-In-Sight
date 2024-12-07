@@ -18,6 +18,7 @@ const LandingPage= () => {
     const navigate = useNavigate()
 
     const [translateFile, setTranslateFile] = useState<File | null>(null);
+    const [ImageUploadFile, setImageUploadFile] = useState<File | null>(null);
 
     async function sendFileKeyToTranslateEndpoint(fileKey: string) {
         try {
@@ -39,6 +40,33 @@ const LandingPage= () => {
 
         } catch (error) {
             console.error('Error sending fileKey:', error);
+        }
+    }
+
+    async function triggerMainBackendFunction(image_url: string) {
+        try {
+            const response = await fetch(`${VITE_API_GATEWAY_URL}/uploadimage`, { //technically 'uploadimage' isnt a good name anymore since presigned URLs
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    "image_url": image_url,
+                    "username": ''
+                }),
+            })
+
+            if (!response.ok) {
+                console.log("Failed to finish image analysis: ", response.statusText);
+            }
+
+            const data: ExpectedResultStructure = await response.json();
+            navigate('/results', { state: { data: data } });
+
+            return await response.json();
+
+        } catch (error) {
+            console.error('Error sending image_url: ', error);
         }
     }
 
@@ -77,28 +105,33 @@ const LandingPage= () => {
 
     const Submit2 = async (e: React.FormEvent) => {
         e.preventDefault();
+        if (!ImageUploadFile) {
+            alert("Please upload a file first!");
+            return;
+        }
+        const endpoint = "/presign-main-upload";
         setLoading(true);
         const apiUrl = `${VITE_API_GATEWAY_URL}/uploadimage`;
 
-        try{
+        const data = await getPresignedUrl(endpoint, ImageUploadFile.name, ImageUploadFile.type);
 
-            const response = await fetch(apiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    image_data: image_data,
-                }),
-            })
-            const data: ExpectedResultStructure = await response.json();
-            navigate('/results', { state: { data: data } });
-            
-        } catch (error) {
-            console.error(`Error uploading image: ${error}`)
-        } finally {
-            setLoading(false)
+        console.log(data)
+
+        const success = await imageUpload(ImageUploadFile, data['url']);
+
+        console.log(success)
+
+        if(!success) {
+            alert("Image upload failed, please try again")
+            return
+        } else {
+            const result = await triggerMainBackendFunction(data['image_url']);
+            setLoading(false);
+            console.log(result)
         }
+
+       
+        setLoading(false)
     }
 
     return (
@@ -109,6 +142,10 @@ const LandingPage= () => {
                 <form className="upload-section">
                     <h2>Upload Food Images</h2>
                     <input
+                        onChange={(e) => 
+                            {
+                                setImageUploadFile(e.target.files?.[0] || null)
+                            }}
                         type="file"
                         accept="image/*"
                     />

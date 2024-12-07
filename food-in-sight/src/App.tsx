@@ -10,6 +10,7 @@ import Header from "./components/Header.tsx";
 import ResultsPage from "./components/ResultsPage.tsx";
 import ProfilePage from "./components/ProfilePage.tsx";
 import TranslateResults from "./components/TranslateResult.tsx";
+import CameraPage from './components/CameraPage.tsx';
 
 Amplify.configure(awsmobile);
 
@@ -29,6 +30,7 @@ export default function App() {
                                         <Route path="/profile" element={<ProfilePage />} />
                                         <Route path="/results" element={<ResultsPage />} />
                                         <Route path="/translatedResults" element={<TranslateResults />} />
+                                        <Route path="/camera" element={<CameraPage />} />
                                     </Routes>
 
                                 </main>

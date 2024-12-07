@@ -52,6 +52,9 @@ def lambda_handler(event, context):
             ProjectVersionArn="arn:aws:rekognition:us-east-1:559050203586:project/FoodInSight/version/FoodInSight.2024-11-11T12.31.51/1731346311117"
         )
 
+        print("CUSTOM response: ", response)
+
+
         # If no custom labels are found, fall back to regular Rekognition
         if not response['CustomLabels']:
             response = rekognition.detect_labels(
@@ -65,6 +68,8 @@ def lambda_handler(event, context):
                 MinConfidence=70,
             )
             custom_labels = response['Labels']
+
+            print(custom_labels)
         else:
             custom_labels = response['CustomLabels']
 
