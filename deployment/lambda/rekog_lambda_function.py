@@ -1,13 +1,16 @@
 import json
 import boto3
 
-def lambda_handler(event, context):
-    rekognition = boto3.client('rekognition')
+# Initialize Rekognition client
+rekognition = boto3.client('rekognition')
 
+def lambda_handler(event, context):
     # Get the image URL and username from the Step Function Payload
     step_function_payload = event.get('Payload', {})
     image_url = step_function_payload.get('image_url', "")
     username = step_function_payload.get('username', "")
+    
+    print(f"Processing image for user: {username}")
     
     # Check if URL has enough segments
     url_segments = image_url.split("/")
@@ -38,7 +41,7 @@ def lambda_handler(event, context):
             })
         }
 
-    # Call Rekognition to detect custom labels
+    # Try to detect custom labels
     try:
         response = rekognition.detect_custom_labels(
             Image={
@@ -51,12 +54,21 @@ def lambda_handler(event, context):
             MinConfidence=70,
             ProjectVersionArn="arn:aws:rekognition:us-east-1:559050203586:project/FoodInSight/version/FoodInSight.2024-11-11T12.31.51/1731346311117"
         )
+        
+        print(f"Custom labels response: {response}")
+        
+        # If no custom labels are found, fall back to regular Rekognition labels
+        if not response.get('CustomLabels', []):
+            print("No custom labels found, using regular Rekognition labels")
+            raise ValueError("No custom labels found.")  # Force fallback to regular labels
+        
+        custom_labels = response['CustomLabels']
 
-        print("CUSTOM response: ", response)
-
-
-        # If no custom labels are found, fall back to regular Rekognition
-        if not response['CustomLabels']:
+    except (ValueError, rekognition.exceptions.ClientError) as e:
+        print(f"Error with custom labels or fallback triggered: {e}")
+        
+        # If there's an error with custom labels or no labels found, fall back to regular Rekognition labels
+        try:
             response = rekognition.detect_labels(
                 Image={
                     'S3Object': {
@@ -68,16 +80,23 @@ def lambda_handler(event, context):
                 MinConfidence=70,
             )
             custom_labels = response['Labels']
-
-            print(custom_labels)
-        else:
-            custom_labels = response['CustomLabels']
-
+            print(f"Regular labels: {custom_labels}")
+        except rekognition.exceptions.ClientError as e:
+            print(f"Error calling Rekognition API for regular labels: {e}")
+            return {
+                'statusCode': 500,
+                'body': json.dumps({
+                    'message': 'Error calling Rekognition API for regular labels.',
+                    'error': str(e)
+                })
+            }
+    
     except Exception as e:
+        print(f"Unexpected error: {e}")
         return {
             'statusCode': 500,
             'body': json.dumps({
-                'message': 'Error calling Rekognition API',
+                'message': 'Unexpected error occurred during processing.',
                 'error': str(e)
             })
         }
