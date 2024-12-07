@@ -66,7 +66,7 @@ if amplify status > /dev/null 2>&1; then
   success "Amplify project already initialized. Skipping 'amplify init'."
 else
   echo -e "${YELLOW}Initializing Amplify project...${RESET}"
-  amplify init --app "food-in-sight-team-5" --env "prod" --yes || { error "Amplify initialization failed. Exiting."; exit 1; }
+  amplify init --app "foodinsightteam5" --env "prod" --yes || { error "Amplify initialization failed. Exiting."; exit 1; }
   success "Amplify project initialized successfully."
 fi
 
