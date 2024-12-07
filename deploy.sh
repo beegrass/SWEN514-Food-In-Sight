@@ -48,7 +48,7 @@ if [ -d ".terraform" ] && [ -f ".terraform.lock.hcl" ]; then
   echo -e "${GREEN}Terraform is already initialized. Skipping 'terraform init'.${NC}"
 else
   echo -e "${YELLOW}Running terraform init...${NC}"
-  terraform init || {error "Error: terraform init failed! Exiting.${NC}"; exit 1; }
+  terraform init || { echo -e "${RED}[ERROR]   ${RESET}Terraform init failed! Exiting."; exit 1; }
 fi
 
 # First check if AWS CLI is already configured and if not then prompt
