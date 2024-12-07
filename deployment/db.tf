@@ -19,10 +19,6 @@ locals {
     }
 }
 
-variable "cognito_user_pool_arn" {
-    default = "arn:aws:cognito-idp:us-east-1:779846783519:userpool/us-east-1_ThHadgoKx" # Replace with your actual User Pool ARN
-}
-
 # ---------- DYNAMODB DEV ----------
 resource "aws_dynamodb_table" "user_table" {
     name            = "Users"
@@ -99,8 +95,9 @@ resource "aws_lambda_function" "diet_lambda" {
     }
 }
 
+# Lambda Functions
 resource "aws_lambda_function" "post_user_creation" {
-    function_name = "NewUser"
+    function_name = "PostUserCreation"
     runtime       = "python3.11"
     handler       = "new_user_lambda.lambda_handler"
     role          = aws_iam_role.lambda_exec.arn
@@ -108,17 +105,9 @@ resource "aws_lambda_function" "post_user_creation" {
 
     environment {
         variables = {
-            DYNAMODB_TABLE = aws_dynamodb_table.user_table.name
+        DYNAMODB_TABLE = aws_dynamodb_table.user_table.name
         }
     }
-}
-
-resource "aws_lambda_permission" "allow_cognito_to_invoke" {
-    statement_id  = "AllowCognitoInvoke"
-    action        = "lambda:InvokeFunction"
-    function_name = aws_lambda_function.post_user_creation.function_name
-    principal     = "cognito-idp.amazonaws.com"
-    source_arn    = var.cognito_user_pool_arn
 }
 
 # IAM Role for Lambda

@@ -20,6 +20,15 @@ resource "aws_cognito_user_pool" "food-in-sight-user-pool" {
       max_length = 50
     }
   }
+
+  # Add the Post Confirmation Lambda trigger
+  lambda_config {
+    post_confirmation = aws_lambda_function.post_user_creation.arn
+  }
+
+  depends_on = [
+    aws_lambda_permission.allow_cognito_to_invoke
+  ]
 }
 
 resource "aws_cognito_user_pool_client" "food-in-sight-user-pool-client" {
@@ -60,6 +69,15 @@ resource "aws_amplify_branch" "main" {
     aws_cognito_user_pool_client.food-in-sight-user-pool-client,
     aws_cognito_identity_pool.food-in-sight-identity-pool
   ]
+}
+
+# Permission for Cognito to invoke Lambda
+resource "aws_lambda_permission" "allow_cognito_to_invoke" {
+  statement_id  = "AllowCognitoInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.post_user_creation.function_name
+  principal     = "cognito-idp.amazonaws.com"
+  source_arn    = aws_cognito_user_pool.food-in-sight-user-pool.arn
 }
 
 output "amplify_branch_url" {
