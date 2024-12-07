@@ -63,13 +63,13 @@ fi
 
 
 info "Initializing Amplify Project..."
-echo "$(REPO_URL)"
-echo "$(AMPLIFY_BRANCH_NAME)"
+echo "${REPO_URL}"
+echo "${AMPLIFY_BRANCH_NAME}"
 if amplify hosting add \
   --platform WEB \
   --framework react \
-  --gitHubUrl "$REPO_URL" \
-  --branch "$AMPLIFY_BRANCH_NAME" \
+  --gitHubUrl "${REPO_URL}" \
+  --branch "${AMPLIFY_BRANCH_NAME}" \
   --enable-auto-build \
   --yes; then
     success "Amplify connected to GitHub successfully."
