@@ -63,6 +63,8 @@ fi
 
 
 info "Initializing Amplify Project..."
+echo "$(REPO_URL)"
+echo "$(AMPLIFY_BRANCH_NAME)"
 if amplify hosting add \
   --platform WEB \
   --framework react \
