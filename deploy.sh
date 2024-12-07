@@ -70,6 +70,34 @@ else
   success "Amplify project initialized successfully."
 fi
 
+echo -e "${YELLOW}Please enter your GitHub Personal Access Token (PAT) to authenticate Amplify with GitHub:${NC}"
+read -s GITHUB_TOKEN
+
+# Ensure the token is not empty
+if [ -z "$GITHUB_TOKEN" ]; then
+  echo -e "${RED}[ERROR] ${RESET}GitHub Personal Access Token is required."
+  exit 1
+fi
+
+# Export the GitHub token as an environment variable for use by Amplify
+export GITHUB_TOKEN
+
+# Set the token for GitHub access (this might be required for some configurations)
+git config --global credential.helper "store"
+
+# Create or update the ~/.git-credentials file with the token for GitHub authentication
+echo "https://$GITHUB_TOKEN@github.com" > ~/.git-credentials
+
+# Test if the token works by attempting to clone the repo (optional)
+echo -e "${BLUE}Testing GitHub authentication with provided token...${NC}"
+git ls-remote https://github.com/SWEN-514-FALL-2024/term-project-2241-swen-514-05-team5.git > /dev/null
+if [ $? -eq 0 ]; then
+  echo -e "${GREEN}GitHub token authenticated successfully.${NC}"
+else
+  echo -e "${RED}[ERROR] ${RESET}Failed to authenticate with GitHub using the provided token."
+  exit 1
+fi
+
 info "Populating Amplify Project..."
 echo "${REPO_URL}"
 echo "${AMPLIFY_BRANCH_NAME}"
