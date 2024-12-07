@@ -44,6 +44,13 @@ trap cleanup EXIT
 
 cd "deployment"
 
+if [ -d ".terraform" ] && [ -f ".terraform.lock.hcl" ]; then
+  echo -e "${GREEN}Terraform is already initialized. Skipping 'terraform init'.${NC}"
+else
+  echo -e "${YELLOW}Running terraform init...${NC}"
+  terraform init || {error "Error: terraform init failed! Exiting.${NC}"; exit 1; }
+fi
+
 # First check if AWS CLI is already configured and if not then prompt
 # -> we do this by checking to see a default profile exists in ~/.aws/
 echo -e "${BLUE}Checking AWS configuration...${NC}"
@@ -52,13 +59,6 @@ if aws sts get-caller-identity > /dev/null 2>&1; then
 else
   echo -e "${YELLOW}AWS CLI is not fully configured. Running 'aws configure'...${NC}"
   aws configure
-fi
-
-if [ -d ".terraform" ] && [ -f ".terraform.lock.hcl" ]; then
-  echo -e "${GREEN}Terraform is already initialized. Skipping 'terraform init'.${NC}"
-else
-  echo -e "${YELLOW}Running terraform init...${NC}"
-  terraform init || {error "Error: terraform init failed! Exiting.${NC}"; exit 1; }
 fi
 
 
