@@ -95,6 +95,21 @@ resource "aws_lambda_function" "diet_lambda" {
     }
 }
 
+# Lambda Functions
+resource "aws_lambda_function" "post_user_creation" {
+    function_name = "PostUserCreation"
+    runtime       = "python3.11"
+    handler       = "new_user_lambda.lambda_handler"
+    role          = aws_iam_role.lambda_exec.arn
+    filename      = data.archive_file.post_user_creation_zip_python.output_path
+
+    environment {
+        variables = {
+        DYNAMODB_TABLE = aws_dynamodb_table.user_table.name
+        }
+    }
+}
+
 # IAM Role for Lambda
 resource "aws_iam_role" "lambda_exec" {
     name = "user_lambda_exec_role"
@@ -182,4 +197,10 @@ data "archive_file" "diet_zip_python" {
     type        = "zip"
     source_file = "${path.module}/lambda/diets_lambda.py"
     output_path = "${path.module}/zipped/diets_lambda.zip"
+}
+
+data "archive_file" "post_user_creation_zip_python" {
+    type        = "zip"
+    source_file = "${path.module}/lambda/new_user_lambda.py"
+    output_path = "${path.module}/zipped/new_user_lambda.zip"
 }
