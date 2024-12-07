@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set project and branch to build
-REPO_URLcd ="https://github.com/SWEN-514-FALL-2024/term-project-2241-swen-514-05-team5"
+REPO_URL="https://github.com/SWEN-514-FALL-2024/term-project-2241-swen-514-05-team5"
 AMPLIFY_BRANCH_NAME="self-creating-amplify"
 TERRAFORM_RESOURCE="aws_amplify_branch.main"
 
