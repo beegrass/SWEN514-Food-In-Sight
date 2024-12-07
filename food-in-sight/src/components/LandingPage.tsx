@@ -85,6 +85,7 @@ const LandingPage= () => {
             const preSignedUrl = await getPresignedUrl(endpoint, translateFile.name);
 
             console.log(`preSignedUrl: ${preSignedUrl}`);
+            console.log("2: ", preSignedUrl.json())
 
             // then send the file using the Pre-signed URL
             const success = await imageUpload(translateFile, preSignedUrl);
@@ -92,6 +93,7 @@ const LandingPage= () => {
             if(!success) {
                 alert("Image upload failed, please try again")
             } else {
+                console.log("SENDING")
                 const translatedText = await sendFileKeyToTranslateEndpoint(translateFile.name);
                 setTranslateLoading(false);
                 navigate('/translatedResults', { state: { translatedText: translatedText } });
